@@ -47,7 +47,7 @@ public class HidDevice extends purejavahidapi.HidDevice {
 	private static int m_InternalIdGenerator = 0;
 	int m_InternalId = m_InternalIdGenerator++; // used when passing 'HidDevice' to Mac OS X callbacks
 	private IOHIDDeviceRef m_IOHIDDeviceRef;
-	private boolean m_Disconnected;
+	private volatile boolean m_Disconnected;
 	private CFStringRef m_CFRunLoopMode;
 	private CFRunLoopRef m_CFRunLoopRef;
 	private CFRunLoopSourceRef m_CFRunLoopSourceRef;
@@ -332,7 +332,7 @@ public class HidDevice extends purejavahidapi.HidDevice {
 		CFRunLoopSourceSignal(m_CFRunLoopSourceRef);
 		CFRunLoopWakeUp(m_CFRunLoopRef);
 
-		if (Thread.currentThread() != m_Thread) {
+		if (Thread.currentThread() != m_Thread && !m_Disconnected) {
 			// Notify the read thread that it can shut down now. 
 			m_SyncShutdown.waitAndSync();
 
